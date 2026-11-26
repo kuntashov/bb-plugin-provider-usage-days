@@ -131,7 +131,7 @@ describe("provider usage footer disclosure", () => {
                         planLabel: "Max",
                         windows: [
                           {
-                            label: "Five-hour limit",
+                            label: "Plan usage",
                             usedPercent: 82,
                             resetsAt: "2026-09-02T18:42:00.000Z",
                             cost: null,
@@ -323,7 +323,8 @@ describe("provider usage footer disclosure", () => {
       slot.getByRole("heading", { name: "claude@example.com" }),
     ).toBeTruthy();
     expect(slot.getByText("82%")).toBeTruthy();
-    const plainMeter = slot.getByRole("meter", { name: "Five-hour limit" });
+    expect(slot.queryByText("Plan usage")).toBeNull();
+    const plainMeter = slot.getByRole("meter", { name: /^Usage$/u });
     expect(plainMeter.children).toHaveLength(1);
     expect(plainMeter.firstElementChild?.getAttribute("style")).toBe("width: 82%;");
 

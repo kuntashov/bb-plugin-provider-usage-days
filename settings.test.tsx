@@ -38,7 +38,7 @@ function account(
       planLabel: "Ultra",
       windows: [
         {
-          label: "Weekly limit",
+          label: providerId === "acp-cursor" ? "Plan usage" : "Weekly limit",
           usedPercent: 42,
           resetsAt,
           cost: null,
@@ -208,6 +208,7 @@ describe("UsageSettingsContent", () => {
     expect(html.match(/Resets in/g)).toHaveLength(2);
     expect(html.match(/Сброс:/g)).toHaveLength(2);
     expect(html.match(/42% used/g)).toHaveLength(4);
+    expect(html).not.toContain("Plan usage");
     expect(html.match(/>4d 1h</g)).toHaveLength(2);
     expect(html.match(/>17d 9h</g)).toHaveLength(1);
     expect(html.match(/role="meter"/g)).toHaveLength(4);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { UsageWindow } from "./usage-schema.js";
-import { usageBarColorClass } from "./usage-format.js";
+import { usageBarColorClass, usageWindowDisplayLabel } from "./usage-format.js";
 
 const DAY_MS = 24 * 60 * 60_000;
 const dayFormat = { maximumFractionDigits: 1 };
@@ -51,7 +51,7 @@ export function UsageMeter({
   return (
     <span
       role="meter"
-      aria-label={window.label}
+      aria-label={usageWindowDisplayLabel(window.label) ?? "Usage"}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
@@ -106,7 +106,7 @@ function SegmentedUsageMeter({
   return (
     <span
       role="meter"
-      aria-label={`${window.label}: usage in days`}
+      aria-label={`${usageWindowDisplayLabel(window.label) ?? "Quota"}: usage in days`}
       aria-valuemin={0}
       aria-valuemax={days}
       aria-valuenow={Math.min(days, usedDays)}

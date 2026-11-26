@@ -25,7 +25,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { formatUsageReset, formatUsdCents } from "./usage-format.js";
+import {
+  formatUsageReset,
+  formatUsdCents,
+  usageWindowDisplayLabel,
+} from "./usage-format.js";
 import { LIST_HOVER_TRANSITION } from "@/components/ui/motion";
 import {
   OPTION_BASE_CLASS_NAME,
@@ -279,6 +283,7 @@ function UsageWindow({
   providerId: string;
 }) {
   const [showReset, setShowReset] = useState(false);
+  const label = usageWindowDisplayLabel(window.label);
   const days = usageWindowDays(providerId, window.label);
   const remainingQuota =
     days === null ? null : formatRemainingQuota(window.usedPercent, days);
@@ -295,15 +300,15 @@ function UsageWindow({
     <button
       type="button"
       className="col-span-full grid grid-cols-subgrid rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-      title={`${window.label} · ${reset ?? "Reset time not reported"}`}
-      aria-label={`${window.label}: ${value}. ${reset ?? "Reset time not reported"}`}
+      title={`${label ?? "Usage"} · ${reset ?? "Reset time not reported"}`}
+      aria-label={`${label ?? "Usage"}: ${value}. ${reset ?? "Reset time not reported"}`}
       aria-describedby={days === null ? undefined : meterDescriptionId}
       aria-expanded={showReset}
       onClick={() => setShowReset((shown) => !shown)}
     >
       <span className="col-span-full grid h-5 grid-cols-subgrid items-center text-2xs">
         <span className="max-w-20 truncate text-subtle-foreground">
-          {shortWindowLabel(window.label)}
+          {label === null ? null : shortWindowLabel(label)}
         </span>
         <UsageMeter
           window={window}

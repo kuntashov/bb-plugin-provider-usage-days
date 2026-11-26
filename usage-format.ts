@@ -1,3 +1,7 @@
+export function usageWindowDisplayLabel(label: string): string | null {
+  return label === "Plan usage" ? null : label;
+}
+
 export function usageBarColorClass(usedPercent: number): string {
   if (usedPercent >= 95) return "bg-destructive";
   if (usedPercent >= 80) return "bg-warning";

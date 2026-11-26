@@ -29,6 +29,7 @@ import {
   type UsageSnapshot,
   type UsageWindow,
 } from "./usage-schema.js";
+import { usageWindowDisplayLabel } from "./usage-format.js";
 import {
   formatRemainingQuota,
   UsageMeter,
@@ -112,6 +113,7 @@ function UsageWindowRow({
   window: UsageWindow;
   providerId: string;
 }) {
+  const label = usageWindowDisplayLabel(window.label);
   const days = usageWindowDays(providerId, window.label);
   const remainingQuota =
     days === null || window.cost !== null
@@ -124,7 +126,7 @@ function UsageWindowRow({
   return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-xs text-foreground">{window.label}</span>
+        <span className="text-xs text-foreground">{label}</span>
         <span className="flex items-baseline gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
           <span>{usageWindowValue(window)}</span>
           {remainingQuota === null ? null : (
