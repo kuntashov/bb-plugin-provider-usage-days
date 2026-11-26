@@ -25,11 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  formatUsageReset,
-  formatUsdCents,
-  usageBarColorClass,
-} from "./usage-format.js";
+import { formatUsageReset, formatUsdCents } from "./usage-format.js";
 import { LIST_HOVER_TRANSITION } from "@/components/ui/motion";
 import {
   OPTION_BASE_CLASS_NAME,
@@ -51,7 +47,7 @@ import {
   usageFeedbackMessages,
 } from "./usage-feedback.js";
 
-import { UsageDays } from "./usage-days.js";
+import { UsageMeter, usageWindowDays } from "./usage-days.js";
 
 import { UsageSettings } from "./settings.js";
 import { CodexResetCredits, formatCodexReset } from "./reset-credits.js";
@@ -279,6 +275,8 @@ function UsageWindow({
   providerId: string;
 }) {
   const [showReset, setShowReset] = useState(false);
+  const days = usageWindowDays(providerId, window.label);
+  const meterDescriptionId = useId();
   const reset = formatUsageReset(window.resetsAt);
   const countdown = formatResetCountdown(window.resetsAt);
   const value =
@@ -293,6 +291,7 @@ function UsageWindow({
       className="col-span-full grid grid-cols-subgrid rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
       title={`${window.label} · ${reset ?? "Reset time not reported"}`}
       aria-label={`${window.label}: ${value}. ${reset ?? "Reset time not reported"}`}
+      aria-describedby={days === null ? undefined : meterDescriptionId}
       aria-expanded={showReset}
       onClick={() => setShowReset((shown) => !shown)}
     >
@@ -300,17 +299,12 @@ function UsageWindow({
         <span className="max-w-20 truncate text-subtle-foreground">
           {shortWindowLabel(window.label)}
         </span>
-        <span className="h-1 min-w-0 overflow-hidden rounded-full bg-sidebar-border">
-          <span
-            className={
-              "block h-full rounded-full " +
-              usageBarColorClass(window.usedPercent)
-            }
-            style={{
-              width: Math.max(2, Math.min(100, window.usedPercent)) + "%",
-            }}
-          />
-        </span>
+        <UsageMeter
+          window={window}
+          days={days}
+          surface="sidebar"
+          descriptionId={meterDescriptionId}
+        />
         <span
           className={cn(
             "text-right tabular-nums",
@@ -325,9 +319,6 @@ function UsageWindow({
         >
           {countdown ?? "—"}
         </span>
-      </span>
-      <span className="col-span-full">
-        <UsageDays providerId={providerId} window={window} />
       </span>
       {showReset ? (
         <span className="col-span-full pb-1 text-2xs text-subtle-foreground">

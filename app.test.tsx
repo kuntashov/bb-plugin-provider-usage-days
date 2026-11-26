@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UsageProvider } from "./usage-schema.js";
 import type { PluginSidebarThread } from "@get-bb/plugin-sdk/app";
@@ -69,7 +69,7 @@ describe("provider usage footer disclosure", () => {
     const pooledAccounts: UsageProvider[] = (
       [
         ["codex", "Codex", "team@example.com", 46],
-        ["codex", "Codex", "personal@example.com", 82],
+        ["codex", "Codex", "personal@example.com", 90],
         ["claude-code", "Claude Code", "claude-team@example.com", 97],
       ] as const
     ).map(([providerId, displayName, email, usedPercent]) => ({
@@ -92,7 +92,7 @@ describe("provider usage footer disclosure", () => {
             usedPercent: usedPercent,
             resetsAt:
               email === "personal@example.com"
-                ? new Date(Date.now() + 51 * 60 * 60_000).toISOString()
+                ? new Date(Date.now() + 156 * 60 * 60_000).toISOString()
                 : null,
             cost: null,
           },
@@ -323,6 +323,9 @@ describe("provider usage footer disclosure", () => {
       slot.getByRole("heading", { name: "claude@example.com" }),
     ).toBeTruthy();
     expect(slot.getByText("82%")).toBeTruthy();
+    const plainMeter = slot.getByRole("meter", { name: "Five-hour limit" });
+    expect(plainMeter.children).toHaveLength(1);
+    expect(plainMeter.firstElementChild?.getAttribute("style")).toBe("width: 82%;");
 
     fireEvent.click(codexTab);
     expect(
@@ -417,7 +420,18 @@ describe("provider usage footer disclosure", () => {
     expect(slot.getAllByText("team@example.com")).toHaveLength(1);
     expect(slot.getAllByText("personal@example.com")).toHaveLength(1);
     expect(slot.getByText("46%")).toBeTruthy();
-    expect(slot.getByText("2d 3h")).toBeTruthy();
+    expect(slot.getByText("6d 12h")).toBeTruthy();
+    const personalQuota = within(
+      slot.getByRole("region", { name: "personal@example.com" }),
+    );
+    const personalRow = personalQuota.getByRole("button", {
+      name: /^Weekly limit: 90% used/u,
+      description: /Day 1 of 7/u,
+    });
+    const meters = within(personalRow).getAllByRole("meter");
+    expect(meters).toHaveLength(1);
+    expect(meters[0]?.querySelectorAll(":scope > [aria-hidden=true]")).toHaveLength(7);
+    expect(meters[0]?.querySelector('[data-period-day="1"]')).toBeTruthy();
     expect(
       slot.getAllByRole("heading").map((heading) => heading.textContent),
     ).toEqual(["team@example.com", "personal@example.com"]);
@@ -426,7 +440,7 @@ describe("provider usage footer disclosure", () => {
     });
     fireEvent.click(windowButton);
     expect(slot.getByText("Reset time not reported.")).toBeTruthy();
-    expect(slot.getByText("82%")).toBeTruthy();
+    expect(slot.getByText("90%")).toBeTruthy();
     fireEvent.click(slot.getByRole("tab", { name: "Claude Code" }));
     expect(slot.getByText("claude-team@example.com")).toBeTruthy();
     expect(slot.queryByText("personal@example.com")).toBeNull();

@@ -11,6 +11,12 @@ import type {
 
 installTestPluginRuntime();
 
+const displayNames: Record<string, string> = {
+  codex: "Codex",
+  "claude-code": "Claude Code",
+  "acp-cursor": "Cursor",
+};
+
 function account(
   id: string,
   providerId = "codex",
@@ -20,7 +26,7 @@ function account(
     id,
     providerId,
     accountLabel: `${id}@example.com`,
-    displayName: providerId === "codex" ? "Codex" : "Claude Code",
+    displayName: displayNames[providerId] ?? providerId,
     logoUrl: null,
     icon: null,
     strings: { iconTint: null },
@@ -191,6 +197,7 @@ describe("UsageSettingsContent", () => {
           account("first"),
           account("second"),
           account("third", "claude-code"),
+          account("fourth", "acp-cursor"),
         ]),
       ],
     });
@@ -198,8 +205,15 @@ describe("UsageSettingsContent", () => {
     expect(html).toContain("first@example.com");
     expect(html).toContain("second@example.com");
     expect(html).not.toContain("local@example.com");
-    expect(html.match(/Resets in/g)).toHaveLength(1);
+    expect(html.match(/Resets in/g)).toHaveLength(2);
     expect(html.match(/Сброс:/g)).toHaveLength(2);
+    expect(html.match(/42% used/g)).toHaveLength(4);
+    expect(html.match(/role="meter"/g)).toHaveLength(4);
+    expect(html.match(/grid-template-columns:repeat\(7, minmax\(0, 1fr\)\)/g))
+      .toHaveLength(2);
+    expect(html).toContain('data-period-day="7"');
+    expect(html).toContain("grid-template-columns:repeat(30, minmax(0, 1fr))");
+    expect(html).toContain('data-period-day="30"');
   });
 
   it("shows Codex usage without a reset line when the reset date is invalid", () => {

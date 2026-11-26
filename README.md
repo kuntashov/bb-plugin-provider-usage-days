@@ -10,9 +10,16 @@ Codex weekly windows show 7 rectangular segments; Cursor (`acp-cursor`) shows 30
 Each segment represents 1/7 or 1/30 of the total quota. Fractional days fill part of
 one segment: 50% means 3.5 / 7 days for Codex or 15 / 30 days for Cursor. These are
 budget equivalents, independent of calendar days elapsed or billing-month length.
-Both the sidebar card and settings retain the original percentage bar and show the remaining budget days. The meter tooltip and accessible description also report the equivalent used days.
+The sidebar and settings each show a single meter and the percentage used. An
+arrow below the segmented meter marks the current day, calculated from the reset
+time and the fixed 7- or 30-day window. The arrow is hidden when the reset time
+is missing, invalid, or has passed. The meter tooltip and accessible description
+report used and remaining budget days. Windows without a day breakdown use a
+plain bar.
 
-The local BB build also displays Codex reset credits and their expiration dates in Moscow time. The sidebar can read the machine selection saved by the bundled Provider Usage display when the new display has no saved selection.
+Codex regular resets and optional additional reset credits are shown in Moscow
+time. The sidebar can reuse the bundled Provider Usage display's machine selection
+when it has no saved selection of its own.
 
 ## Install
 
@@ -55,11 +62,6 @@ more than one provider, the card opens on an **All** tab that stacks every provi
 tab's accounts, each marked with its provider icon. Provider tabs use provider icons,
 with pooled accounts stacked under each provider. Each account shows its plan and,
 per usage window, a bar, the percent used, and the time until reset.
-Codex weekly windows also show a seven-segment day-equivalent meter; Cursor
-(`acp-cursor`) windows show thirty segments. One segment represents 1/7 or 1/30
-of the quota, with fractional segments filled proportionally. This converts
-consumption to budget days, independently of calendar days elapsed or the actual
-length of a billing month. The same meter appears in settings.
 
 The card lists account metadata cheaply, then fetches the accounts on the selected
 tab. Unopened tabs have no quota badge until measured, and a badge shows only while
