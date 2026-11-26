@@ -28,20 +28,17 @@ function renderDays(
 
 describe("day-equivalent usage", () => {
   it.each([
-    ["codex", "Weekly limit", 7, 3.5],
-    ["codex", "Weekly · Spark", 7, 3.5],
-    ["acp-cursor", "Tokens this month", 30, 15],
-  ])("converts %s %s consumption to days", (providerId, label, count, days) => {
+    ["codex", "Weekly limit", 7, 3.5, "3d 12h left"],
+    ["codex", "Weekly · Spark", 7, 3.5, "3d 12h left"],
+    ["acp-cursor", "Tokens this month", 30, 15, "15d left"],
+  ])("converts %s %s consumption to days", (providerId, label, count, days, remaining) => {
     const view = renderDays(providerId, label, 50);
     const meter = view.getByRole("meter");
     expect(meter.children).toHaveLength(count);
     expect(meter.getAttribute("aria-valuenow")).toBe(String(days));
     expect(meter.getAttribute("aria-valuemax")).toBe(String(count));
-    const remaining = (count - days).toLocaleString(undefined, {
-      maximumFractionDigits: 1,
-    });
-    expect(meter.getAttribute("aria-valuetext")).toContain(`${remaining} days left`);
-    expect(meter.getAttribute("title")).toContain(`${remaining} days left`);
+    expect(meter.getAttribute("aria-valuetext")).toContain(remaining);
+    expect(meter.getAttribute("title")).toContain(remaining);
     const filled = Array.from(meter.children).map((segment) =>
       segment.firstElementChild?.getAttribute("style"),
     );
@@ -63,7 +60,7 @@ describe("day-equivalent usage", () => {
         percent <= 0 ? "0" : "7",
       );
       expect(meter.getAttribute("aria-valuetext")).toContain(
-        `${percent <= 0 ? 7 : 0} days left`,
+        percent <= 0 ? "7d left" : "0h left",
       );
       for (const segment of meter.children) {
         expect(segment.firstElementChild?.getAttribute("style")).toBe(
@@ -119,7 +116,7 @@ describe("day-equivalent usage", () => {
       const view = renderDays("codex", "Weekly limit", 90, resetsAt);
       const meter = view.getByRole("meter");
       expect(meter.querySelector("[data-period-day]")).toBeNull();
-      expect(meter.getAttribute("aria-valuetext")).toBe("6.3 / 7 days used · 0.7 days left");
+      expect(meter.getAttribute("aria-valuetext")).toBe("6.3 / 7 days used · 16h left");
     },
   );
 

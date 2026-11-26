@@ -48,7 +48,7 @@ import {
 } from "./usage-feedback.js";
 
 import {
-  formatRemainingQuotaDays,
+  formatRemainingQuota,
   UsageMeter,
   usageWindowDays,
 } from "./usage-days.js";
@@ -280,8 +280,8 @@ function UsageWindow({
 }) {
   const [showReset, setShowReset] = useState(false);
   const days = usageWindowDays(providerId, window.label);
-  const remainingDays =
-    days === null ? null : formatRemainingQuotaDays(window.usedPercent, days);
+  const remainingQuota =
+    days === null ? null : formatRemainingQuota(window.usedPercent, days);
   const meterDescriptionId = useId();
   const reset = formatUsageReset(window.resetsAt);
   const countdown = formatResetCountdown(window.resetsAt);
@@ -315,9 +315,9 @@ function UsageWindow({
           <span className={usageToneTextClass(window.usedPercent)}>
             {Math.round(window.usedPercent)}%
           </span>
-          {remainingDays === null ? null : (
+          {remainingQuota === null ? null : (
             <span aria-hidden="true" className="text-subtle-foreground">
-              {remainingDays}
+              {remainingQuota}
             </span>
           )}
         </span>

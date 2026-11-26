@@ -30,7 +30,7 @@ import {
   type UsageWindow,
 } from "./usage-schema.js";
 import {
-  formatRemainingQuotaDays,
+  formatRemainingQuota,
   UsageMeter,
   usageWindowDays,
 } from "./usage-days.js";
@@ -113,10 +113,10 @@ function UsageWindowRow({
   providerId: string;
 }) {
   const days = usageWindowDays(providerId, window.label);
-  const remainingDays =
+  const remainingQuota =
     days === null || window.cost !== null
       ? null
-      : formatRemainingQuotaDays(window.usedPercent, days);
+      : formatRemainingQuota(window.usedPercent, days);
   const reset =
     providerId === "codex"
       ? formatCodexReset(window.resetsAt)
@@ -127,9 +127,9 @@ function UsageWindowRow({
         <span className="text-xs text-foreground">{window.label}</span>
         <span className="flex items-baseline gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
           <span>{usageWindowValue(window)}</span>
-          {remainingDays === null ? null : (
+          {remainingQuota === null ? null : (
             <span aria-hidden="true" className="text-subtle-foreground">
-              {remainingDays}
+              {remainingQuota}
             </span>
           )}
         </span>

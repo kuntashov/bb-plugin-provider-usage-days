@@ -13,8 +13,8 @@ budget equivalents, independent of calendar days elapsed or billing-month length
 The sidebar and settings each show a single meter and the percentage used. An
 arrow below the segmented meter marks the current day, calculated from the reset
 time and the fixed 7- or 30-day window. The arrow is hidden when the reset time
-is missing, invalid, or has passed. Remaining budget days appear next to the
-percentage. The meter tooltip and accessible description report both used and
+is missing, invalid, or has passed. Remaining quota appears next to the percentage in
+whole days and hours. The meter tooltip and accessible description report both used and
 remaining budget days. Windows without a day breakdown use a plain bar.
 
 Codex regular resets and optional additional reset credits are shown in Moscow
