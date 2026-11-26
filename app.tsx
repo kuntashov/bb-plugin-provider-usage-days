@@ -47,7 +47,11 @@ import {
   usageFeedbackMessages,
 } from "./usage-feedback.js";
 
-import { UsageMeter, usageWindowDays } from "./usage-days.js";
+import {
+  formatRemainingQuotaDays,
+  UsageMeter,
+  usageWindowDays,
+} from "./usage-days.js";
 
 import { UsageSettings } from "./settings.js";
 import { CodexResetCredits, formatCodexReset } from "./reset-credits.js";
@@ -276,6 +280,8 @@ function UsageWindow({
 }) {
   const [showReset, setShowReset] = useState(false);
   const days = usageWindowDays(providerId, window.label);
+  const remainingDays =
+    days === null ? null : formatRemainingQuotaDays(window.usedPercent, days);
   const meterDescriptionId = useId();
   const reset = formatUsageReset(window.resetsAt);
   const countdown = formatResetCountdown(window.resetsAt);
@@ -305,13 +311,15 @@ function UsageWindow({
           surface="sidebar"
           descriptionId={meterDescriptionId}
         />
-        <span
-          className={cn(
-            "text-right tabular-nums",
-            usageToneTextClass(window.usedPercent),
+        <span className="flex items-baseline justify-end gap-1.5 whitespace-nowrap tabular-nums">
+          <span className={usageToneTextClass(window.usedPercent)}>
+            {Math.round(window.usedPercent)}%
+          </span>
+          {remainingDays === null ? null : (
+            <span aria-hidden="true" className="text-subtle-foreground">
+              {remainingDays}
+            </span>
           )}
-        >
-          {Math.round(window.usedPercent)}%
         </span>
         <span
           aria-hidden="true"

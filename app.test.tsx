@@ -428,6 +428,7 @@ describe("provider usage footer disclosure", () => {
       name: /^Weekly limit: 90% used/u,
       description: /Day 1 of 7/u,
     });
+    expect(within(personalRow).getByText("0.7 days left")).toBeTruthy();
     const meters = within(personalRow).getAllByRole("meter");
     expect(meters).toHaveLength(1);
     expect(meters[0]?.querySelectorAll(":scope > [aria-hidden=true]")).toHaveLength(7);

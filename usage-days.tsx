@@ -3,6 +3,17 @@ import type { UsageWindow } from "./usage-schema.js";
 import { usageBarColorClass } from "./usage-format.js";
 
 const DAY_MS = 24 * 60 * 60_000;
+const dayFormat = { maximumFractionDigits: 1 };
+
+function usedQuotaDays(usedPercent: number, days: number): number {
+  return (Math.max(0, usedPercent) * days) / 100;
+}
+
+export function formatRemainingQuotaDays(usedPercent: number, days: number): string {
+  const remaining = Math.max(0, days - usedQuotaDays(usedPercent, days));
+  const formatted = remaining.toLocaleString(undefined, dayFormat);
+  return `${formatted} ${formatted === (1).toLocaleString(undefined) ? "day" : "days"} left`;
+}
 
 export function usageWindowDays(providerId: string, label: string): number | null {
   if (providerId === "codex" && /^Weekly\b/u.test(label)) return 7;
@@ -82,11 +93,9 @@ function SegmentedUsageMeter({
 
   const daysUntilReset = Math.ceil((resetAt - now) / DAY_MS);
   const periodDay = daysUntilReset > 0 ? Math.max(1, days - daysUntilReset + 1) : null;
-  const usedDays = (Math.max(0, window.usedPercent) * days) / 100;
-  const dayFormat = { maximumFractionDigits: 1 };
+  const usedDays = usedQuotaDays(window.usedPercent, days);
   const usedLabel = `${usedDays.toLocaleString(undefined, dayFormat)} / ${days} days used`;
-  const remainingDays = Math.max(0, days - usedDays);
-  const remainingLabel = `${remainingDays.toLocaleString(undefined, dayFormat)} days left`;
+  const remainingLabel = formatRemainingQuotaDays(window.usedPercent, days);
   const description = `${usedLabel} · ${remainingLabel}`;
   const label = periodDay === null ? description : `${description}. Day ${periodDay} of ${days}`;
   const colorClass = usageBarColorClass(window.usedPercent);
