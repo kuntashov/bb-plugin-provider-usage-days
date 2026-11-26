@@ -14,7 +14,7 @@ The sidebar and settings each show a single meter and the percentage used. An
 arrow below the segmented meter marks the current day, calculated from the reset
 time and the fixed 7- or 30-day window. The arrow is hidden when the reset time
 is missing, invalid, or has passed. The sidebar shows the time until quota reset
-next to the percentage. The meter tooltip and accessible description report used
+next to the percentage and the reset date under the meter. The meter tooltip and accessible description report used
 budget days. Windows without a day breakdown use a plain bar.
 
 Codex regular resets and optional additional reset credits are shown in Moscow

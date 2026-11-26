@@ -342,6 +342,7 @@ describe("provider usage footer disclosure", () => {
       slot.getByRole("heading", { name: "claude@example.com" }),
     ).toBeTruthy();
     expect(slot.getByText("82%")).toBeTruthy();
+    expect(slot.getByText(/^Сброс: 0[23]\.09$/u)).toBeTruthy();
     expect(slot.queryByText("Plan usage")).toBeNull();
     const plainMeter = slot.getByRole("meter", { name: /^Usage$/u });
     expect(plainMeter.children).toHaveLength(1);
@@ -449,6 +450,10 @@ describe("provider usage footer disclosure", () => {
       description: /Day 1 of 7/u,
     });
     expect(within(personalRow).getByText("6d 12h")).toBeTruthy();
+    expect(within(personalRow).getByText(/^Сброс: \d{2}\.\d{2}$/u)).toBeTruthy();
+    fireEvent.click(personalRow);
+    expect(within(personalRow).getByText(/^Сброс: .* МСК$/u)).toBeTruthy();
+    fireEvent.click(personalRow);
     expect(within(personalRow).queryByText("16h")).toBeNull();
     expect(within(personalRow).queryByText("7d")).toBeNull();
     const meters = within(personalRow).getAllByRole("meter");
