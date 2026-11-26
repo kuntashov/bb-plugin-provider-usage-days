@@ -208,8 +208,8 @@ describe("UsageSettingsContent", () => {
     expect(html.match(/Resets in/g)).toHaveLength(2);
     expect(html.match(/Сброс:/g)).toHaveLength(2);
     expect(html.match(/42% used/g)).toHaveLength(4);
-    expect(html.match(/>4d 1h left</g)).toHaveLength(2);
-    expect(html.match(/>17d 9h left</g)).toHaveLength(1);
+    expect(html.match(/>4d 1h</g)).toHaveLength(2);
+    expect(html.match(/>17d 9h</g)).toHaveLength(1);
     expect(html.match(/role="meter"/g)).toHaveLength(4);
     expect(html.match(/grid-template-columns:repeat\(7, minmax\(0, 1fr\)\)/g))
       .toHaveLength(2);
