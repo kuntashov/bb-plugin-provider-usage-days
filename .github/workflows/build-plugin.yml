@@ -1,0 +1,52 @@
+name: Build Provider Usage Days
+
+on:
+  push:
+    branches: [build/provider-usage-days-97f3c2b]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BB_CLI: ""
+      BB_CLI_REEXEC: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24.x"
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - name: Build with BB 0.48.1
+        run: |
+          npm install --prefix "$RUNNER_TEMP/bb-toolchain" --no-audit --no-fund bb-app@0.48.1
+          "$RUNNER_TEMP/bb-toolchain/node_modules/.bin/bb" plugin build .
+      - name: Package the plugin
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, statSync } from 'node:fs';
+          for (const file of ['app.js', 'app.css', 'server.js']) {
+            assert.ok(statSync(`dist/${file}`).size > 0, `missing content in ${file}`);
+          }
+          for (const bundle of ['app', 'server']) {
+            const meta = JSON.parse(readFileSync(`dist/${bundle}.meta.json`, 'utf8'));
+            assert.equal(meta.sdkVersion, '0.6.104');
+            assert.equal(meta.builtWith.bbVersion, '0.48.1');
+          }
+          NODE
+          tar -czf "$RUNNER_TEMP/provider-usage-days.tar.gz" package.json LICENSE dist/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: provider-usage-days
+          path: ${{ runner.temp }}/provider-usage-days.tar.gz
+          if-no-files-found: error
