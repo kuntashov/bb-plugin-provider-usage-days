@@ -26,9 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import {
-  formatShortUsageReset,
   formatUsageReset,
-  MOSCOW_TIME_ZONE,
   formatUsdCents,
   usageWindowDisplayLabel,
 } from "./usage-format.js";
@@ -288,10 +286,6 @@ function UsageWindow({
   const meterDescriptionId = useId();
   const reset = formatUsageReset(window.resetsAt);
   const countdown = formatResetCountdown(window.resetsAt);
-  const shortReset = formatShortUsageReset(
-    window.resetsAt,
-    providerId === "codex" ? MOSCOW_TIME_ZONE : undefined,
-  );
   const value =
     window.cost === null
       ? Math.round(window.usedPercent) + "% used"
@@ -334,14 +328,12 @@ function UsageWindow({
           {countdown ?? "—"}
         </span>
       </span>
-      {showReset || shortReset !== null ? (
-        <span className="col-span-full truncate whitespace-nowrap pb-1 text-2xs text-subtle-foreground">
-          {showReset
-            ? ((providerId === "codex"
-                ? formatCodexReset(window.resetsAt)
-                : reset) ?? "Reset time not reported.")
-            : `Сброс: ${shortReset}`}
-          {showReset && window.cost !== null ? ` · ${value}` : null}
+      {showReset ? (
+        <span className="col-span-full pb-1 text-2xs text-subtle-foreground">
+          {(providerId === "codex"
+            ? formatCodexReset(window.resetsAt)
+            : reset) ?? "Reset time not reported."}
+          {window.cost === null ? "" : ` · ${value}`}
         </span>
       ) : null}
     </button>

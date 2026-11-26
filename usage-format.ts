@@ -1,5 +1,3 @@
-export const MOSCOW_TIME_ZONE = "Europe/Moscow";
-
 export function usageWindowDisplayLabel(label: string): string | null {
   return label === "Plan usage" ? null : label;
 }
@@ -8,23 +6,6 @@ export function usageBarColorClass(usedPercent: number): string {
   if (usedPercent >= 95) return "bg-destructive";
   if (usedPercent >= 80) return "bg-warning";
   return "bg-primary";
-}
-
-export function formatShortUsageReset(
-  resetsAt: string | null,
-  timeZone?: string,
-): string | null {
-  if (resetsAt === null) return null;
-  const date = new Date(resetsAt);
-  if (!Number.isFinite(date.getTime())) return null;
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone,
-  }).formatToParts(date);
-  const day = parts.find((part) => part.type === "day")?.value;
-  const month = parts.find((part) => part.type === "month")?.value;
-  return `${day}.${month}`;
 }
 
 export function formatUsageReset(resetsAt: string | null): string | null {
@@ -43,7 +24,7 @@ export function formatUsageReset(resetsAt: string | null): string | null {
       : `Resets in ${hours} hr ${remainingMinutes} min`;
   }
   const withinWeek = diffMs < 7 * 24 * 60 * 60_000;
-  const formatted = reset.toLocaleString(undefined, {
+  const formatted = reset.toLocaleString("en-GB", {
     weekday: withinWeek ? "short" : undefined,
     month: withinWeek ? undefined : "short",
     day: withinWeek ? undefined : "numeric",

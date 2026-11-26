@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { formatShortUsageReset, MOSCOW_TIME_ZONE } from "./usage-format.js";
 import { CodexResetCredits, formatCodexReset } from "./reset-credits.js";
 
 const credits = {
@@ -133,12 +132,6 @@ it("distinguishes missing data, failure, zero resets, and no expiration", () => 
 
 it("formats the regular quota reset using the same explicit timezone", () => {
   expect(formatCodexReset("2026-11-05T07:00:00Z")).toBe(
-    "Сброс: 05.11.2026, 10:00 МСК",
+    "Reset: 05.11.2026, 10:00 MSK",
   );
-});
-
-it("formats the compact Moscow reset date across midnight", () => {
-  expect(formatShortUsageReset("2026-11-30T22:30:00Z", MOSCOW_TIME_ZONE)).toBe("01.12");
-  expect(formatShortUsageReset("unknown", MOSCOW_TIME_ZONE)).toBeNull();
-  expect(formatShortUsageReset(null, MOSCOW_TIME_ZONE)).toBeNull();
 });

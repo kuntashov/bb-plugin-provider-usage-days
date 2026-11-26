@@ -1,13 +1,14 @@
 import type { UsageProvider } from "./usage-schema.js";
-import { MOSCOW_TIME_ZONE } from "./usage-format.js";
 import { Fragment, useEffect, useState } from "react";
 
 type ResetCredits = NonNullable<UsageProvider["resetCredits"]>;
 type ResetCredit = Extract<ResetCredits, { status: "ok" }>["credits"][number];
 
+const moscowTimeZone = "Europe/Moscow";
+
 function moscowParts(date: Date) {
   const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: MOSCOW_TIME_ZONE,
+    timeZone: moscowTimeZone,
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -32,7 +33,7 @@ export function formatCodexReset(value: string | null): string | null {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   const { day, month, year, hour, minute } = moscowParts(date);
-  return `Сброс: ${day}.${month}.${year}, ${hour}:${minute} МСК`;
+  return `Reset: ${day}.${month}.${year}, ${hour}:${minute} MSK`;
 }
 
 function formatCompactResetDate(value: string): string {

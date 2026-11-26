@@ -206,7 +206,7 @@ describe("UsageSettingsContent", () => {
     expect(html).toContain("second@example.com");
     expect(html).not.toContain("local@example.com");
     expect(html.match(/Resets in/g)).toHaveLength(2);
-    expect(html.match(/Сброс:/g)).toHaveLength(2);
+    expect(html.match(/Reset:/g)).toHaveLength(2);
     expect(html.match(/42% used/g)).toHaveLength(4);
     expect(html).not.toContain("Plan usage");
     expect(html).not.toContain(">4d 1h<");
@@ -226,7 +226,7 @@ describe("UsageSettingsContent", () => {
       ],
     });
     expect(html).toContain("42% used");
-    expect(html).not.toContain("Сброс:");
+    expect(html).not.toContain("Reset:");
   });
 
   it("renders loading before any source is known", () => {
