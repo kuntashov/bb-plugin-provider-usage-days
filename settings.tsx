@@ -30,11 +30,7 @@ import {
   type UsageWindow,
 } from "./usage-schema.js";
 import { usageWindowDisplayLabel } from "./usage-format.js";
-import {
-  formatRemainingQuota,
-  UsageMeter,
-  usageWindowDays,
-} from "./usage-days.js";
+import { UsageMeter, usageWindowDays } from "./usage-days.js";
 
 function SettingsBadge({ children }: { children: ReactNode }) {
   return (
@@ -115,10 +111,6 @@ function UsageWindowRow({
 }) {
   const label = usageWindowDisplayLabel(window.label);
   const days = usageWindowDays(providerId, window.label);
-  const remainingQuota =
-    days === null || window.cost !== null
-      ? null
-      : formatRemainingQuota(window.usedPercent, days);
   const reset =
     providerId === "codex"
       ? formatCodexReset(window.resetsAt)
@@ -127,13 +119,8 @@ function UsageWindowRow({
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-xs text-foreground">{label}</span>
-        <span className="flex items-baseline gap-1.5 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-          <span>{usageWindowValue(window)}</span>
-          {remainingQuota === null ? null : (
-            <span aria-hidden="true" className="text-subtle-foreground">
-              {remainingQuota}
-            </span>
-          )}
+        <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+          {usageWindowValue(window)}
         </span>
       </div>
       <UsageMeter

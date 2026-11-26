@@ -163,6 +163,18 @@ describe("provider usage footer disclosure", () => {
                         ],
                       },
                     },
+                    ...(["unauthenticated", "expired"] as const).map((status) => ({
+                      id: `opencode-${status}`,
+                      providerId: "acp-opencode",
+                      accountLabel: null,
+                      displayName: "OpenCode",
+                      logoUrl: null,
+                      icon: null,
+                      strings: { iconTint: null },
+                      signInHint: "Sign in to OpenCode.",
+                      expiredHint: "Sign in to OpenCode again.",
+                      usage: { status },
+                    })),
                   ],
                 },
                 {
@@ -306,6 +318,13 @@ describe("provider usage footer disclosure", () => {
     const allTab = slot.getByRole("tab", { name: "All accounts" });
     const claudeTab = slot.getByRole("tab", { name: "Claude Code" });
     const codexTab = slot.getByRole("tab", { name: "Codex" });
+    const openCodeTab = slot.getByRole("tab", { name: "OpenCode" });
+    expect(slot.queryByRole("heading", { name: "OpenCode" })).toBeNull();
+    fireEvent.click(openCodeTab);
+    expect(slot.getByText("Sign in to OpenCode.")).toBeTruthy();
+    expect(slot.getByText("Sign in to OpenCode again.")).toBeTruthy();
+    fireEvent.click(allTab);
+    expect(slot.queryByText(/Sign in to OpenCode/u)).toBeNull();
     fireEvent.keyDown(allTab, { key: "ArrowRight" });
     expect(claudeTab.getAttribute("aria-selected")).toBe("true");
     expect(
@@ -429,7 +448,9 @@ describe("provider usage footer disclosure", () => {
       name: /^Weekly limit: 90% used/u,
       description: /Day 1 of 7/u,
     });
-    expect(within(personalRow).getByText("16h")).toBeTruthy();
+    expect(within(personalRow).getByText("6d 12h")).toBeTruthy();
+    expect(within(personalRow).queryByText("16h")).toBeNull();
+    expect(within(personalRow).queryByText("7d")).toBeNull();
     const meters = within(personalRow).getAllByRole("meter");
     expect(meters).toHaveLength(1);
     expect(meters[0]?.querySelectorAll(":scope > [aria-hidden=true]")).toHaveLength(7);

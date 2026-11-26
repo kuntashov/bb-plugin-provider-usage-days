@@ -52,7 +52,6 @@ import {
 } from "./usage-feedback.js";
 
 import {
-  formatRemainingQuota,
   UsageMeter,
   usageWindowDays,
 } from "./usage-days.js";
@@ -196,7 +195,6 @@ function formatResetCountdown(resetsAt: string | null): string | null {
 function shortWindowLabel(label: string): string {
   return label
     .replace(/^Five-hour limit$|^5 hours$/u, "5h")
-    .replace(/^Weekly limit$|^Weekly/u, "7d")
     .replace(/^Daily limit$/u, "1d");
 }
 
@@ -273,7 +271,7 @@ function UsageNotice({
 }
 
 const USAGE_GRID_CLASS_NAME =
-  "grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] gap-x-3";
+  "grid grid-cols-[minmax(0,1fr)_max-content_max-content] gap-x-3";
 
 function UsageWindow({
   window,
@@ -285,8 +283,6 @@ function UsageWindow({
   const [showReset, setShowReset] = useState(false);
   const label = usageWindowDisplayLabel(window.label);
   const days = usageWindowDays(providerId, window.label);
-  const remainingQuota =
-    days === null ? null : formatRemainingQuota(window.usedPercent, days);
   const meterDescriptionId = useId();
   const reset = formatUsageReset(window.resetsAt);
   const countdown = formatResetCountdown(window.resetsAt);
@@ -307,24 +303,23 @@ function UsageWindow({
       onClick={() => setShowReset((shown) => !shown)}
     >
       <span className="col-span-full grid h-5 grid-cols-subgrid items-center text-2xs">
-        <span className="max-w-20 truncate text-subtle-foreground">
-          {label === null ? null : shortWindowLabel(label)}
-        </span>
-        <UsageMeter
-          window={window}
-          days={days}
-          surface="sidebar"
-          descriptionId={meterDescriptionId}
-        />
-        <span className="flex items-baseline justify-end gap-1.5 whitespace-nowrap tabular-nums">
-          <span className={usageToneTextClass(window.usedPercent)}>
-            {Math.round(window.usedPercent)}%
-          </span>
-          {remainingQuota === null ? null : (
-            <span aria-hidden="true" className="text-subtle-foreground">
-              {remainingQuota}
+        <span className="flex min-w-0 items-center gap-2">
+          {days === null && label !== null ? (
+            <span className="max-w-20 truncate text-subtle-foreground">
+              {shortWindowLabel(label)}
             </span>
-          )}
+          ) : null}
+          <span className="min-w-0 flex-1">
+            <UsageMeter
+              window={window}
+              days={days}
+              surface="sidebar"
+              descriptionId={meterDescriptionId}
+            />
+          </span>
+        </span>
+        <span className={cn("text-right tabular-nums", usageToneTextClass(window.usedPercent))}>
+          {Math.round(window.usedPercent)}%
         </span>
         <span
           aria-hidden="true"
@@ -606,8 +601,17 @@ export function ProviderUsageStatusContent({
   const activeProvider = isAllTab
     ? null
     : (providers.find((provider) => provider.id === activeTabId) ?? null);
+  const allProviders = providers
+    .map((provider) => ({
+      id: provider.id,
+      accounts: provider.accounts.filter((account) => {
+        const status = account.usage?.status;
+        return status !== "unauthenticated" && status !== "expired";
+      }),
+    }))
+    .filter((provider) => provider.accounts.length > 0);
   const activeAccounts = isAllTab
-    ? providers.flatMap((provider) => provider.accounts)
+    ? allProviders.flatMap((provider) => provider.accounts)
     : (activeProvider?.accounts ?? []);
   const hasActiveUsage = hasReportedUsage(activeAccounts);
   const unavailable = activeMachine?.error != null || snapshot.error !== null;
@@ -653,7 +657,9 @@ export function ProviderUsageStatusContent({
             ? {
                 kind: "empty",
                 icon: "Info",
-                message: emptyUsageMessage(activeMachine),
+                message: isAllTab
+                  ? "No signed-in accounts."
+                  : emptyUsageMessage(activeMachine),
                 retry: false,
               }
             : null;
@@ -911,7 +917,7 @@ export function ProviderUsageStatusContent({
           <UsageSkeleton rows={3} />
         ) : isAllTab ? (
           <div className={cn(USAGE_GRID_CLASS_NAME, "gap-y-2.5")}>
-            {providers.map((provider) => (
+            {allProviders.map((provider) => (
               <div
                 key={provider.id}
                 className="col-span-full grid grid-cols-subgrid gap-y-2 border-t border-sidebar-border pt-2.5 first:border-t-0 first:pt-0"
