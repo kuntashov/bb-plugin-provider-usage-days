@@ -1,6 +1,6 @@
 {
   "name": "bb-plugin-provider-usage-days",
-  "version": "0.1.0",
+  "version": "0.1.0-artbear.2",
   "type": "module",
   "description": "Provider usage with segmented day-equivalent quota meters for Codex and Cursor",
   "engines": {

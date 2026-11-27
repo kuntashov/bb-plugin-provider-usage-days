@@ -37,6 +37,9 @@ describe("day-equivalent usage", () => {
     expect(meter.children).toHaveLength(count);
     expect(meter.getAttribute("aria-valuenow")).toBe(String(days));
     expect(meter.getAttribute("aria-valuemax")).toBe(String(count));
+    const budgetUsed = `${days.toLocaleString(undefined)} / ${count} days used`;
+    expect(meter.getAttribute("aria-valuetext")).toBe(budgetUsed);
+    expect(meter.getAttribute("title")).toContain(budgetUsed);
     const filled = Array.from(meter.children).map((segment) =>
       segment.firstElementChild?.getAttribute("style"),
     );

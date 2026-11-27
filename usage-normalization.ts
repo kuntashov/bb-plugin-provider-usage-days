@@ -19,6 +19,10 @@ export function normalizeUsageMeasurement(
     edu: "Education",
   };
   const plan = usage.plan;
+  const legacyBusinessPlan = "self_serve_business_prolite";
+  const isLegacyBusiness =
+    usage.planLabel?.toLowerCase() === legacyBusinessPlan ||
+    plan?.id.toLowerCase() === legacyBusinessPlan;
   const planName = plan ? labels[plan.id] : undefined;
   const windowLabels = {
     "five-hour": "Five-hour limit",
@@ -30,9 +34,11 @@ export function normalizeUsageMeasurement(
     ...measurement,
     usage: {
       ...usage,
-      planLabel: planName
-        ? `${planName}${plan?.multiplier == null ? "" : ` (${plan.multiplier}x)`}`
-        : usage.planLabel,
+      planLabel: isLegacyBusiness
+        ? "Business"
+        : planName
+          ? `${planName}${plan?.multiplier == null ? "" : ` (${plan.multiplier}x)`}`
+          : usage.planLabel,
       windows: usage.windows.map((window) => ({
         ...window,
         label:

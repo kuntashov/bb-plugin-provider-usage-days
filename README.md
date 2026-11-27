@@ -13,7 +13,13 @@ budget equivalents, independent of calendar days elapsed or billing-month length
 The sidebar and settings each show a single meter and the percentage used. An
 arrow below the segmented meter marks the current day, calculated from the reset
 time and the fixed 7- or 30-day window. The arrow is hidden when the reset time
-is missing, invalid, or has passed. Windows without a day breakdown use a plain bar.
+is missing, invalid, or has passed. The sidebar shows the time until quota reset
+next to the percentage. The meter tooltip and accessible description report used
+budget days. Windows without a day breakdown use a plain bar.
+
+Codex regular resets and optional additional reset credits are shown in Moscow
+time. The sidebar can reuse the bundled Provider Usage display's machine selection
+when it has no saved selection of its own.
 
 ## Install
 
@@ -53,7 +59,8 @@ UI components are vendored locally. Runtime access to BB uses the public
 
 Shows usage from enabled usage-source plugins in the sidebar. When a location has
 more than one provider, the card opens on an **All** tab that stacks every provider
-tab's accounts, each marked with its provider icon. Provider tabs use provider icons,
+tab's accounts, each marked with its provider icon. Accounts that need sign-in
+are shown on their provider tabs. Provider tabs use provider icons,
 with pooled accounts stacked under each provider. Each account shows its plan and,
 per usage window, a bar, the percent used, and the time until reset.
 

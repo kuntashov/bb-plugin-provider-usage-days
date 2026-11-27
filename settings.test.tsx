@@ -17,7 +17,11 @@ const displayNames: Record<string, string> = {
   "acp-cursor": "Cursor",
 };
 
-function account(id: string, providerId = "codex"): UsageProvider {
+function account(
+  id: string,
+  providerId = "codex",
+  resetsAt = new Date(Date.now() + 3600_000).toISOString(),
+): UsageProvider {
   return {
     id,
     providerId,
@@ -34,9 +38,9 @@ function account(id: string, providerId = "codex"): UsageProvider {
       planLabel: "Ultra",
       windows: [
         {
-          label: "Weekly limit",
+          label: providerId === "acp-cursor" ? "Plan usage" : "Weekly limit",
           usedPercent: 42,
-          resetsAt: new Date(Date.now() + 3600_000).toISOString(),
+          resetsAt,
           cost: null,
         },
       ],
@@ -201,14 +205,28 @@ describe("UsageSettingsContent", () => {
     expect(html).toContain("first@example.com");
     expect(html).toContain("second@example.com");
     expect(html).not.toContain("local@example.com");
-    expect(html.match(/Resets in/g)).toHaveLength(4);
+    expect(html.match(/Resets in/g)).toHaveLength(2);
+    expect(html.match(/Reset:/g)).toHaveLength(2);
     expect(html.match(/42% used/g)).toHaveLength(4);
+    expect(html).not.toContain("Plan usage");
+    expect(html).not.toContain(">4d 1h<");
+    expect(html).not.toContain(">17d 9h<");
     expect(html.match(/role="meter"/g)).toHaveLength(4);
     expect(html.match(/grid-template-columns:repeat\(7, minmax\(0, 1fr\)\)/g))
       .toHaveLength(2);
     expect(html).toContain('data-period-day="7"');
     expect(html).toContain("grid-template-columns:repeat(30, minmax(0, 1fr))");
     expect(html).toContain('data-period-day="30"');
+  });
+
+  it("shows Codex usage without a reset line when the reset date is invalid", () => {
+    const html = renderContent({
+      machines: [
+        machine("source:pool", [account("first", "codex", "unknown")]),
+      ],
+    });
+    expect(html).toContain("42% used");
+    expect(html).not.toContain("Reset:");
   });
 
   it("renders loading before any source is known", () => {

@@ -94,3 +94,22 @@ it("normalizes structured plans and windows while retaining custom provider labe
     },
   });
 });
+
+it.each([
+  { planLabel: "Self_serve_business_prolite", plan: null },
+  { planLabel: "Self_serve_business_prolite", plan: { id: "prolite", multiplier: null } },
+  { planLabel: null, plan: { id: "self_serve_business_prolite", multiplier: null } },
+])("displays the legacy self-serve business plan as Business", (plan) => {
+  const measurement = usageMeasurementSchema.parse({
+    observedAt: 123,
+    usage: {
+      status: "ok",
+      accountEmail: null,
+      windows: [],
+      ...plan,
+    },
+  });
+  expect(normalizeUsageMeasurement(measurement).usage).toMatchObject({
+    planLabel: "Business",
+  });
+});

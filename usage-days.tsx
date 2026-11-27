@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import type { UsageWindow } from "./usage-schema.js";
-import { usageBarColorClass } from "./usage-format.js";
+import { usageBarColorClass, usageWindowDisplayLabel } from "./usage-format.js";
 
 const DAY_MS = 24 * 60 * 60_000;
+const dayFormat = { maximumFractionDigits: 1 };
+
+function usedQuotaDays(usedPercent: number, days: number): number {
+  return (Math.max(0, usedPercent) * days) / 100;
+}
 
 export function usageWindowDays(providerId: string, label: string): number | null {
   if (providerId === "codex" && /^Weekly\b/u.test(label)) return 7;
@@ -37,7 +42,7 @@ export function UsageMeter({
   return (
     <span
       role="meter"
-      aria-label={window.label}
+      aria-label={usageWindowDisplayLabel(window.label) ?? "Usage"}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
@@ -80,17 +85,17 @@ function SegmentedUsageMeter({
     return () => clearTimeout(timer);
   }, [resetAt]);
 
-  const remainingDays = Math.ceil((resetAt - now) / DAY_MS);
-  const periodDay = remainingDays > 0 ? Math.max(1, days - remainingDays + 1) : null;
-  const usedDays = (Math.max(0, window.usedPercent) * days) / 100;
-  const usedLabel = `${usedDays.toLocaleString(undefined, { maximumFractionDigits: 1 })} / ${days} days used`;
+  const daysUntilReset = Math.ceil((resetAt - now) / DAY_MS);
+  const periodDay = daysUntilReset > 0 ? Math.max(1, days - daysUntilReset + 1) : null;
+  const usedDays = usedQuotaDays(window.usedPercent, days);
+  const usedLabel = `${usedDays.toLocaleString(undefined, dayFormat)} / ${days} days used`;
   const label = periodDay === null ? usedLabel : `${usedLabel}. Day ${periodDay} of ${days}`;
   const colorClass = usageBarColorClass(window.usedPercent);
 
   return (
     <span
       role="meter"
-      aria-label={`${window.label}: usage in days`}
+      aria-label={`${usageWindowDisplayLabel(window.label) ?? "Quota"}: usage in days`}
       aria-valuemin={0}
       aria-valuemax={days}
       aria-valuenow={Math.min(days, usedDays)}

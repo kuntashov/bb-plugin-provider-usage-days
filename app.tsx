@@ -25,7 +25,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { formatUsageReset, formatUsdCents } from "./usage-format.js";
+import {
+  formatUsageReset,
+  formatUsdCents,
+  usageWindowDisplayLabel,
+} from "./usage-format.js";
 import { LIST_HOVER_TRANSITION } from "@/components/ui/motion";
 import {
   OPTION_BASE_CLASS_NAME,
@@ -47,9 +51,13 @@ import {
   usageFeedbackMessages,
 } from "./usage-feedback.js";
 
-import { UsageMeter, usageWindowDays } from "./usage-days.js";
+import {
+  UsageMeter,
+  usageWindowDays,
+} from "./usage-days.js";
 
 import { UsageSettings } from "./settings.js";
+import { CodexResetCredits, formatCodexReset } from "./reset-credits.js";
 
 export interface UsageStoreSnapshot {
   data: UsageSnapshot | null;
@@ -76,7 +84,8 @@ function readSelectedMachine(storageKey: string | null): string | null {
   if (lastMachineId !== null) return lastMachineId;
   if (storageKey !== null) {
     try {
-      const stored = window.localStorage.getItem(storageKey);
+      const stored = window.localStorage.getItem(storageKey) ??
+        window.localStorage.getItem("bb.bb--provider-usage.selected-machine.v1");
       if (stored !== null && stored.length > 0) return stored;
     } catch {}
   }
@@ -186,7 +195,6 @@ function formatResetCountdown(resetsAt: string | null): string | null {
 function shortWindowLabel(label: string): string {
   return label
     .replace(/^Five-hour limit$|^5 hours$/u, "5h")
-    .replace(/^Weekly limit$|^Weekly/u, "7d")
     .replace(/^Daily limit$/u, "1d");
 }
 
@@ -263,7 +271,7 @@ function UsageNotice({
 }
 
 const USAGE_GRID_CLASS_NAME =
-  "grid grid-cols-[max-content_minmax(0,1fr)_max-content_max-content] gap-x-3";
+  "grid grid-cols-[minmax(0,1fr)_max-content_max-content] gap-x-3";
 
 function UsageWindow({
   window,
@@ -273,6 +281,7 @@ function UsageWindow({
   providerId: string;
 }) {
   const [showReset, setShowReset] = useState(false);
+  const label = usageWindowDisplayLabel(window.label);
   const days = usageWindowDays(providerId, window.label);
   const meterDescriptionId = useId();
   const reset = formatUsageReset(window.resetsAt);
@@ -287,28 +296,29 @@ function UsageWindow({
     <button
       type="button"
       className="col-span-full grid grid-cols-subgrid rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-      title={`${window.label} · ${reset ?? "Reset time not reported"}`}
-      aria-label={`${window.label}: ${value}. ${reset ?? "Reset time not reported"}`}
+      title={`${label ?? "Usage"} · ${reset ?? "Reset time not reported"}`}
+      aria-label={`${label ?? "Usage"}: ${value}. ${reset ?? "Reset time not reported"}`}
       aria-describedby={days === null ? undefined : meterDescriptionId}
       aria-expanded={showReset}
       onClick={() => setShowReset((shown) => !shown)}
     >
       <span className="col-span-full grid h-5 grid-cols-subgrid items-center text-2xs">
-        <span className="max-w-20 truncate text-subtle-foreground">
-          {shortWindowLabel(window.label)}
+        <span className="flex min-w-0 items-center gap-2">
+          {days === null && label !== null ? (
+            <span className="max-w-20 truncate text-subtle-foreground">
+              {shortWindowLabel(label)}
+            </span>
+          ) : null}
+          <span className="min-w-0 flex-1">
+            <UsageMeter
+              window={window}
+              days={days}
+              surface="sidebar"
+              descriptionId={meterDescriptionId}
+            />
+          </span>
         </span>
-        <UsageMeter
-          window={window}
-          days={days}
-          surface="sidebar"
-          descriptionId={meterDescriptionId}
-        />
-        <span
-          className={cn(
-            "text-right tabular-nums",
-            usageToneTextClass(window.usedPercent),
-          )}
-        >
+        <span className={cn("text-right tabular-nums", usageToneTextClass(window.usedPercent))}>
           {Math.round(window.usedPercent)}%
         </span>
         <span
@@ -320,7 +330,9 @@ function UsageWindow({
       </span>
       {showReset ? (
         <span className="col-span-full pb-1 text-2xs text-subtle-foreground">
-          {reset ?? "Reset time not reported."}
+          {(providerId === "codex"
+            ? formatCodexReset(window.resetsAt)
+            : reset) ?? "Reset time not reported."}
           {window.cost === null ? "" : ` · ${value}`}
         </span>
       ) : null}
@@ -415,6 +427,9 @@ function AccountUsage({
             providerId={account.providerId}
           />
         ))
+      ) : null}
+      {usage?.status === "ok" && account.providerId === "codex" ? (
+        <CodexResetCredits value={account.resetCredits} layout="compact" />
       ) : null}
     </section>
   );
@@ -586,8 +601,17 @@ export function ProviderUsageStatusContent({
   const activeProvider = isAllTab
     ? null
     : (providers.find((provider) => provider.id === activeTabId) ?? null);
+  const allProviders = providers
+    .map((provider) => ({
+      id: provider.id,
+      accounts: provider.accounts.filter((account) => {
+        const status = account.usage?.status;
+        return status !== "unauthenticated" && status !== "expired";
+      }),
+    }))
+    .filter((provider) => provider.accounts.length > 0);
   const activeAccounts = isAllTab
-    ? providers.flatMap((provider) => provider.accounts)
+    ? allProviders.flatMap((provider) => provider.accounts)
     : (activeProvider?.accounts ?? []);
   const hasActiveUsage = hasReportedUsage(activeAccounts);
   const unavailable = activeMachine?.error != null || snapshot.error !== null;
@@ -633,7 +657,9 @@ export function ProviderUsageStatusContent({
             ? {
                 kind: "empty",
                 icon: "Info",
-                message: emptyUsageMessage(activeMachine),
+                message: isAllTab
+                  ? "No signed-in accounts."
+                  : emptyUsageMessage(activeMachine),
                 retry: false,
               }
             : null;
@@ -891,7 +917,7 @@ export function ProviderUsageStatusContent({
           <UsageSkeleton rows={3} />
         ) : isAllTab ? (
           <div className={cn(USAGE_GRID_CLASS_NAME, "gap-y-2.5")}>
-            {providers.map((provider) => (
+            {allProviders.map((provider) => (
               <div
                 key={provider.id}
                 className="col-span-full grid grid-cols-subgrid gap-y-2 border-t border-sidebar-border pt-2.5 first:border-t-0 first:pt-0"

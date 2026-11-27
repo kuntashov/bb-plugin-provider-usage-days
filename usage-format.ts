@@ -1,3 +1,7 @@
+export function usageWindowDisplayLabel(label: string): string | null {
+  return label === "Plan usage" ? null : label;
+}
+
 export function usageBarColorClass(usedPercent: number): string {
   if (usedPercent >= 95) return "bg-destructive";
   if (usedPercent >= 80) return "bg-warning";
@@ -20,7 +24,7 @@ export function formatUsageReset(resetsAt: string | null): string | null {
       : `Resets in ${hours} hr ${remainingMinutes} min`;
   }
   const withinWeek = diffMs < 7 * 24 * 60 * 60_000;
-  const formatted = reset.toLocaleString(undefined, {
+  const formatted = reset.toLocaleString("en-GB", {
     weekday: withinWeek ? "short" : undefined,
     month: withinWeek ? undefined : "short",
     day: withinWeek ? undefined : "numeric",
