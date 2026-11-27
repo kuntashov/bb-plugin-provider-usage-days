@@ -1,3 +1,5 @@
+import { registerNaparnikSource } from "./naparnik-source.js";
+import { naparnikId, naparnikName } from "./naparnik-contract.js";
 import {
   normalizeUsageMeasurement,
   selectUsageResources,
@@ -134,7 +136,10 @@ function resourceProvider(
     ...normalizedProvider(
       metadata ?? {
         id: resource.providerId,
-        displayName: resource.providerId,
+        displayName:
+          resource.providerId === naparnikId
+            ? naparnikName
+            : resource.providerId,
         logoUrl: null,
       },
       measurement?.usage,
@@ -147,6 +152,12 @@ function resourceProvider(
             "This account’s session expired. Sign in again in the source plugin’s settings, then reload usage.",
         }
       : {}),
+    ...(resource.providerId === naparnikId
+      ? {
+          signInHint:
+            "Connect your 1C account in the local Naparnik Relay panel.",
+        }
+      : {}),
     id: `${pluginId}:${resource.id}`,
     accountLabel:
       resource.scope.kind === "shared"
@@ -156,6 +167,7 @@ function resourceProvider(
 }
 
 export default function providerUsagePlugin(bb: BbPluginApi): void {
+  registerNaparnikSource(bb);
   const inventories = new Map<string, SourceResult>();
   const measurements = new Map<
     string,
@@ -190,7 +202,11 @@ export default function providerUsagePlugin(bb: BbPluginApi): void {
       })
       .then((raw) => {
         const value = normalizeUsageMeasurement(raw);
-        if (value.usage.status === "error")
+        if (
+          value.usage.status === "error" &&
+          (pluginId !== bb.pluginId ||
+            measurements.get(key)?.value.usage.status === "ok")
+        )
           throw new Error("Usage could not be refreshed.");
         measurements.set(key, { value, loadedAt: Date.now() });
         failures.delete(key);
@@ -293,6 +309,7 @@ export default function providerUsagePlugin(bb: BbPluginApi): void {
           if (
             !request.force &&
             cached &&
+            cached.value.usage.status !== "error" &&
             Date.now() - cached.loadedAt < request.maxAgeMs
           )
             return;

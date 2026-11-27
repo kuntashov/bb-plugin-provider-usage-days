@@ -10,7 +10,10 @@ Codex weekly windows show 7 rectangular segments; Cursor (`acp-cursor`) shows 30
 Each segment represents 1/7 or 1/30 of the total quota. Fractional days fill part of
 one segment: 50% means 3.5 / 7 days for Codex or 15 / 30 days for Cursor. These are
 budget equivalents, independent of calendar days elapsed or billing-month length.
-Both the sidebar card and settings retain the original percentage bar.
+The sidebar and settings each show a single meter and the percentage used. An
+arrow below the segmented meter marks the current day, calculated from the reset
+time and the fixed 7- or 30-day window. The arrow is hidden when the reset time
+is missing, invalid, or has passed. Windows without a day breakdown use a plain bar.
 
 ## Install
 
@@ -53,11 +56,6 @@ more than one provider, the card opens on an **All** tab that stacks every provi
 tab's accounts, each marked with its provider icon. Provider tabs use provider icons,
 with pooled accounts stacked under each provider. Each account shows its plan and,
 per usage window, a bar, the percent used, and the time until reset.
-Codex weekly windows also show a seven-segment day-equivalent meter; Cursor
-(`acp-cursor`) windows show thirty segments. One segment represents 1/7 or 1/30
-of the quota, with fractional segments filled proportionally. This converts
-consumption to budget days, independently of calendar days elapsed or the actual
-length of a billing month. The same meter appears in settings.
 
 The card lists account metadata cheaply, then fetches the accounts on the selected
 tab. Unopened tabs have no quota badge until measured, and a badge shows only while
@@ -91,6 +89,11 @@ OpenCode's host-local source reports OpenCode Go subscription limits when a Go
 Console account or API key is configured on the selected machine. Its five-hour, weekly, and monthly
 windows come from Go's usage API. Other providers used through OpenCode and Zen
 pay-as-you-go spending are not included.
+
+On machines with the standard Naparnik Relay profile (`~/.naparnik-relay/connection.json`),
+**1С:Напарник** shows the account's five-hour and weekly budget independently
+of OpenCode Go. The host plugin reads the local panel at `127.0.0.1:47831`.
+Reload requests a new budget check. The panel credentials stay on that machine.
 
 Known provider-issued account identities are deduplicated within the selected
 location. Unknown identities are never merged by email. Structured plan and quota

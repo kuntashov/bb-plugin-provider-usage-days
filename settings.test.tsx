@@ -11,12 +11,18 @@ import type {
 
 installTestPluginRuntime();
 
+const displayNames: Record<string, string> = {
+  codex: "Codex",
+  "claude-code": "Claude Code",
+  "acp-cursor": "Cursor",
+};
+
 function account(id: string, providerId = "codex"): UsageProvider {
   return {
     id,
     providerId,
     accountLabel: `${id}@example.com`,
-    displayName: providerId === "codex" ? "Codex" : "Claude Code",
+    displayName: displayNames[providerId] ?? providerId,
     logoUrl: null,
     icon: null,
     strings: { iconTint: null },
@@ -187,6 +193,7 @@ describe("UsageSettingsContent", () => {
           account("first"),
           account("second"),
           account("third", "claude-code"),
+          account("fourth", "acp-cursor"),
         ]),
       ],
     });
@@ -194,7 +201,14 @@ describe("UsageSettingsContent", () => {
     expect(html).toContain("first@example.com");
     expect(html).toContain("second@example.com");
     expect(html).not.toContain("local@example.com");
-    expect(html.match(/Resets in/g)).toHaveLength(3);
+    expect(html.match(/Resets in/g)).toHaveLength(4);
+    expect(html.match(/42% used/g)).toHaveLength(4);
+    expect(html.match(/role="meter"/g)).toHaveLength(4);
+    expect(html.match(/grid-template-columns:repeat\(7, minmax\(0, 1fr\)\)/g))
+      .toHaveLength(2);
+    expect(html).toContain('data-period-day="7"');
+    expect(html).toContain("grid-template-columns:repeat(30, minmax(0, 1fr))");
+    expect(html).toContain('data-period-day="30"');
   });
 
   it("renders loading before any source is known", () => {
@@ -242,4 +256,26 @@ describe("UsageSettingsContent", () => {
     expect(html).toContain("No usage limits reported for this plan.");
     expect(html).not.toContain("0% used");
   });
+});
+
+it("shows both Naparnik windows while OpenCode Go asks for sign-in", () => {
+  const relay: UsageProvider = {
+    ...account("relay", "naparnik-relay"),
+    displayName: "1С:Напарник",
+    accountLabel: null,
+    usage: {
+      status: "ok", accountEmail: null, planLabel: null,
+      windows: [
+        { label: "Five-hour limit", usedPercent: 0, resetsAt: null, cost: null },
+        { label: "Weekly limit", usedPercent: 23, resetsAt: "2026-11-29T04:24:48Z", cost: null },
+      ],
+    },
+  };
+  const go: UsageProvider = {
+    ...account("go", "acp-opencode"), displayName: "OpenCode",
+    accountLabel: null, usage: { status: "unauthenticated" },
+  };
+  const html = renderContent({ machines: [machine("target", [go, relay])], selectedId: "target" });
+  for (const text of ["OpenCode", go.signInHint, relay.displayName, "Five-hour limit", "Weekly limit", "0%", "23%"])
+    expect(html).toContain(text);
 });

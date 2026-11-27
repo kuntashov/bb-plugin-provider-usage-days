@@ -28,7 +28,7 @@ import {
   type UsageSnapshot,
   type UsageWindow,
 } from "./usage-schema.js";
-import { UsageDays } from "./usage-days.js";
+import { UsageMeter, usageWindowDays } from "./usage-days.js";
 
 function SettingsBadge({ children }: { children: ReactNode }) {
   return (
@@ -44,16 +44,6 @@ interface ProviderConfig {
   signInHint: string;
   expiredHint: string;
   provider: UsageProvider;
-}
-
-function barColorClass(usedPercent: number): string {
-  if (usedPercent >= 95) {
-    return "bg-destructive";
-  }
-  if (usedPercent >= 80) {
-    return "bg-warning";
-  }
-  return "bg-primary";
 }
 
 function formatReset(resetsAt: string | null): string | null {
@@ -126,18 +116,11 @@ function UsageWindowRow({
           {usageWindowValue(window)}
         </span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn(
-            "h-full rounded-full",
-            barColorClass(window.usedPercent),
-          )}
-          style={{
-            width: `${Math.min(100, Math.max(window.usedPercent, 2))}%`,
-          }}
-        />
-      </div>
-      <UsageDays providerId={providerId} window={window} />
+      <UsageMeter
+        window={window}
+        days={usageWindowDays(providerId, window.label)}
+        surface="settings"
+      />
       {reset ? <p className="text-xs text-muted-foreground">{reset}</p> : null}
     </div>
   );
